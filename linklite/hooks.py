@@ -168,23 +168,11 @@ after_install = "linklite.install.after_install"
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"linklite.tasks.all"
-# 	],
-# 	"daily": [
-# 		"linklite.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"linklite.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"linklite.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"linklite.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	"daily": [
+		"linklite.tasks.disable_expired_links"
+	],
+}
 
 # Testing
 # -------
