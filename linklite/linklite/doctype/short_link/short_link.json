@@ -10,7 +10,14 @@
   "qr_code",
   "column_break_awjo",
   "short_link",
-  "description"
+  "description",
+  "section_break_settings",
+  "require_captcha",
+  "skip_link_manager_role",
+  "enable_qr_code",
+  "column_break_expiry",
+  "expires_on",
+  "is_disabled"
  ],
  "fields": [
   {
@@ -43,6 +50,47 @@
    "fieldname": "qr_code",
    "fieldtype": "Attach Image",
    "label": "QR Code"
+  },
+  {
+   "fieldname": "section_break_settings",
+   "fieldtype": "Section Break",
+   "label": "Settings"
+  },
+  {
+   "default": "0",
+   "fieldname": "require_captcha",
+   "fieldtype": "Check",
+   "label": "Require Captcha Before Redirect"
+  },
+  {
+   "default": "0",
+   "description": "When checked, users without the Link Manager role can also create and manage this link",
+   "fieldname": "skip_link_manager_role",
+   "fieldtype": "Check",
+   "label": "Allow All Users (Skip Link Manager Role)"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_qr_code",
+   "fieldtype": "Check",
+   "label": "Generate QR Code"
+  },
+  {
+   "fieldname": "column_break_expiry",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Link will be disabled after this date. Defaults to 30 days from creation.",
+   "fieldname": "expires_on",
+   "fieldtype": "Date",
+   "label": "Expires On"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_disabled",
+   "fieldtype": "Check",
+   "label": "Disabled",
+   "read_only": 1
   }
  ],
  "image_field": "qr_code",

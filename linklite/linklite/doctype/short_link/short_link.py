@@ -17,23 +17,34 @@ class ShortLink(Document):
 
 		description: DF.SmallText | None
 		destination_url: DF.Data
+		enable_qr_code: DF.Check
+		expires_on: DF.Date | None
+		is_disabled: DF.Check
 		qr_code: DF.AttachImage | None
+		require_captcha: DF.Check
 		short_link: DF.Data
+		skip_link_manager_role: DF.Check
 	# end: auto-generated types
 
 	def before_insert(self):
 		self.validate_blacklisted_slug()
 		self.validate_nested_slug()
+		self.set_default_expiry()
+
+	def set_default_expiry(self):
+		if not self.expires_on:
+			self.expires_on = frappe.utils.add_days(frappe.utils.today(), 30)
 
 	def after_insert(self):
-		self.generate_qr_code()
+		if self.enable_qr_code:
+			self.generate_qr_code()
 
 	@frappe.whitelist()
 	def generate_qr_code(self):
 		import qrcode
 		import io
 
-		img = qrcode.make(f"http://{frappe.local.site}:{frappe.conf.webserver_port}/{self.short_link}")
+		img = qrcode.make(f"{frappe.utils.get_url()}/{self.short_link}")
 		output = io.BytesIO()
 		img.save(output, format="PNG")
 		hex_data = output.getvalue()
