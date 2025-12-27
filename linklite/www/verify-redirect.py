@@ -1,4 +1,14 @@
+import hmac
+import hashlib
 import frappe
+
+
+def verify_captcha_token(link: str, token: str) -> bool:
+    """Verify the HMAC token for captcha verification using constant-time comparison."""
+    secret = frappe.local.conf.get("secret_key", frappe.local.conf.get("encryption_key", ""))
+    message = f"captcha:{link}".encode()
+    expected_token = hmac.new(secret.encode(), message, hashlib.sha256).hexdigest()[:32]
+    return hmac.compare_digest(expected_token, token)
 
 
 def get_context(context):
@@ -10,6 +20,10 @@ def get_context(context):
 
     if not frappe.db.exists("Short Link", link):
         frappe.throw("Link not found", frappe.DoesNotExistError)
+
+    # Validate the captcha token
+    if not verify_captcha_token(link, token):
+        frappe.throw("Invalid verification token", frappe.DoesNotExistError)
 
     short_link = frappe.get_doc("Short Link", link)
 

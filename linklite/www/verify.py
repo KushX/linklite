@@ -1,4 +1,13 @@
+import hmac
+import hashlib
 import frappe
+
+
+def generate_captcha_token(link: str) -> str:
+    """Generate an HMAC token for captcha verification."""
+    secret = frappe.local.conf.get("secret_key", frappe.local.conf.get("encryption_key", ""))
+    message = f"captcha:{link}".encode()
+    return hmac.new(secret.encode(), message, hashlib.sha256).hexdigest()[:32]
 
 
 def get_context(context):
@@ -12,8 +21,10 @@ def get_context(context):
 
     short_link = frappe.get_doc("Short Link", link)
 
+    token = generate_captcha_token(link)
+
     context.destination_url = short_link.destination_url
-    context.redirect_url = f"/verify-redirect?link={link}&token={frappe.generate_hash(length=16)}"
+    context.redirect_url = f"/verify-redirect?link={link}&token={token}"
     context.no_cache = 1
 
     return context

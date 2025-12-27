@@ -22,6 +22,7 @@ def path_resolver(path: str):
 		# If captcha is required, redirect to verification page
 		if short_link.require_captcha:
 			frappe.redirect(f"/verify?link={short_link.name}")
+			return
 
 		# Record the click
 		click = frappe.new_doc("Short Link Click")
