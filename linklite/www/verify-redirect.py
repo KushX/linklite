@@ -30,16 +30,16 @@ def get_context(context):
 
     short_link = frappe.get_doc("Short Link", link)
 
-    # Record the click
+    # Record the click (ignore permissions for guest access)
     click = frappe.new_doc("Short Link Click")
     request_headers = frappe.request.headers
     click.ip = request_headers.get("X-Real-Ip")
     click.user_agent = request_headers.get("User-Agent")
     click.referrer = request_headers.get("Referer")
     click.link = short_link.name
-    click.insert().submit()
+    click.insert(ignore_permissions=True).submit()
     frappe.db.commit()
 
-    # Redirect to destination
-    frappe.redirect(short_link.destination_url)
-    return
+    # Redirect to destination (raise Redirect to stop template rendering)
+    frappe.local.flags.redirect_location = short_link.destination_url
+    raise frappe.Redirect

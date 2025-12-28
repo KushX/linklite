@@ -24,7 +24,7 @@ def path_resolver(path: str):
 			frappe.redirect(f"/verify?link={short_link.name}")
 			return
 
-		# Record the click
+		# Record the click (ignore permissions for guest access)
 		click = frappe.new_doc("Short Link Click")
 
 		request_headers = frappe.request.headers
@@ -33,7 +33,7 @@ def path_resolver(path: str):
 		click.referrer = request_headers.get("Referer")
 
 		click.link = short_link.name
-		click.insert().submit()
+		click.insert(ignore_permissions=True).submit()
 		frappe.db.commit() # to remove once MyISAM
 
 		frappe.redirect(short_link.destination_url)
