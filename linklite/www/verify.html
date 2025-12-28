@@ -26,96 +26,42 @@
         margin-bottom: 24px;
     }
 
-    .slider-container {
-        position: relative;
-        width: 100%;
-        height: 50px;
-        background: linear-gradient(135deg, #e5e7eb 0%, #f3f4f6 100%);
-        border-radius: 25px;
-        overflow: hidden;
-        margin-bottom: 20px;
-        border: 2px solid #d1d5db;
+    .countdown {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #3b82f6;
+        margin: 20px 0;
     }
 
-    .slider-track {
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 100%;
-        width: 0;
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        border-radius: 25px;
-        transition: width 0.1s ease-out;
-    }
-
-    .slider-text {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 500;
-        color: var(--text-muted, #6b7280);
-        user-select: none;
-        pointer-events: none;
-        transition: opacity 0.3s;
-    }
-
-    .slider-text.hidden {
-        opacity: 0;
-    }
-
-    .slider-handle {
-        position: absolute;
-        top: 3px;
-        left: 3px;
-        width: 44px;
-        height: 44px;
-        background: linear-gradient(135deg, #fff 0%, #f9fafb 100%);
-        border-radius: 50%;
-        cursor: grab;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        transition: transform 0.1s ease-out, box-shadow 0.2s;
-        z-index: 10;
-    }
-
-    .slider-handle:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    .slider-handle:active {
-        cursor: grabbing;
-        transform: scale(1.05);
-    }
-
-    .slider-handle svg {
-        width: 20px;
-        height: 20px;
-        color: #6b7280;
-        transition: color 0.3s;
-    }
-
-    .slider-handle.success svg {
-        color: #10b981;
-    }
-
-    .success-message {
+    .continue-btn {
         display: none;
-        color: #10b981;
-        font-weight: 500;
-        margin-top: 16px;
+        width: 100%;
+        padding: 14px 24px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #fff;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
     }
 
-    .success-message.show {
+    .continue-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .continue-btn:active {
+        transform: translateY(0);
+    }
+
+    .continue-btn.show {
         display: block;
     }
 
     .destination-info {
-        margin-top: 20px;
+        margin-top: 24px;
         padding: 12px;
         background: var(--control-bg, #f9fafb);
         border-radius: 8px;
@@ -137,144 +83,43 @@
         .verify-title {
             color: #f9fafb;
         }
-        .slider-container {
-            background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
-            border-color: #4b5563;
-        }
-        .slider-handle {
-            background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
-        }
-        .slider-handle svg {
-            color: #9ca3af;
-        }
     }
 </style>
 
 <div class="verify-container">
     <div class="verify-title">Human Verification</div>
-    <div class="verify-subtitle">Slide to continue to your destination</div>
+    <div class="verify-subtitle" id="subtitle">Please wait...</div>
 
-    <div class="slider-container" id="sliderContainer">
-        <div class="slider-track" id="sliderTrack"></div>
-        <div class="slider-text" id="sliderText">Slide to unlock</div>
-        <div class="slider-handle" id="sliderHandle">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-        </div>
-    </div>
+    <div class="countdown" id="countdown">3</div>
 
-    <div class="success-message" id="successMessage">
-        Verified! Redirecting...
-    </div>
+    <a href="{{ redirect_url }}" class="continue-btn" id="continueBtn">
+        Continue to destination
+    </a>
 
     <div class="destination-info">
         <div class="destination-label">You will be redirected to:</div>
-        <div id="destinationUrl">{{ destination_url }}</div>
+        <div>{{ destination_url }}</div>
     </div>
 </div>
 
 <script>
 (function() {
-    const container = document.getElementById('sliderContainer');
-    const handle = document.getElementById('sliderHandle');
-    const track = document.getElementById('sliderTrack');
-    const text = document.getElementById('sliderText');
-    const successMessage = document.getElementById('successMessage');
+    var count = 3;
+    var countdown = document.getElementById('countdown');
+    var btn = document.getElementById('continueBtn');
+    var subtitle = document.getElementById('subtitle');
 
-    let isDragging = false;
-    let startX = 0;
-    let handleLeft = 0;
-    const maxLeft = container.offsetWidth - handle.offsetWidth - 6;
-
-    function updatePosition(clientX) {
-        const deltaX = clientX - startX;
-        let newLeft = Math.max(3, Math.min(handleLeft + deltaX, maxLeft));
-        handle.style.left = newLeft + 'px';
-        track.style.width = (newLeft + handle.offsetWidth / 2) + 'px';
-
-        const progress = (newLeft - 3) / (maxLeft - 3);
-        if (progress > 0.3) {
-            text.classList.add('hidden');
+    var timer = setInterval(function() {
+        count--;
+        if (count > 0) {
+            countdown.textContent = count;
         } else {
-            text.classList.remove('hidden');
+            clearInterval(timer);
+            countdown.style.display = 'none';
+            subtitle.textContent = 'Click to continue';
+            btn.classList.add('show');
         }
-
-        return newLeft;
-    }
-
-    function onStart(clientX) {
-        isDragging = true;
-        startX = clientX;
-        handleLeft = parseInt(handle.style.left) || 3;
-        handle.style.transition = 'none';
-        track.style.transition = 'none';
-    }
-
-    function onMove(clientX) {
-        if (!isDragging) return;
-        updatePosition(clientX);
-    }
-
-    function onEnd() {
-        if (!isDragging) return;
-        isDragging = false;
-
-        const currentLeft = parseInt(handle.style.left) || 3;
-        const progress = (currentLeft - 3) / (maxLeft - 3);
-
-        handle.style.transition = 'left 0.3s ease-out, transform 0.1s';
-        track.style.transition = 'width 0.3s ease-out';
-
-        if (progress >= 0.95) {
-            // Success
-            handle.style.left = maxLeft + 'px';
-            track.style.width = container.offsetWidth + 'px';
-            handle.classList.add('success');
-            handle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>';
-            successMessage.classList.add('show');
-            text.textContent = 'Verified!';
-            text.classList.remove('hidden');
-            text.style.color = '#10b981';
-
-            // Redirect after verification
-            setTimeout(function() {
-                window.location.href = '{{ redirect_url }}';
-            }, 800);
-        } else {
-            // Reset
-            handle.style.left = '3px';
-            track.style.width = '0';
-            text.classList.remove('hidden');
-        }
-    }
-
-    // Mouse events
-    handle.addEventListener('mousedown', function(e) {
-        e.preventDefault();
-        onStart(e.clientX);
-    });
-
-    document.addEventListener('mousemove', function(e) {
-        onMove(e.clientX);
-    });
-
-    document.addEventListener('mouseup', onEnd);
-
-    // Touch events
-    handle.addEventListener('touchstart', function(e) {
-        e.preventDefault();
-        onStart(e.touches[0].clientX);
-    });
-
-    document.addEventListener('touchmove', function(e) {
-        if (isDragging) {
-            e.preventDefault();
-            onMove(e.touches[0].clientX);
-        }
-    }, { passive: false });
-
-    document.addEventListener('touchend', onEnd);
+    }, 1000);
 })();
 </script>
 {% endblock %}
