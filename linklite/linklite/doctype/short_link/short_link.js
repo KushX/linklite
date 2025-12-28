@@ -12,9 +12,13 @@ frappe.ui.form.on("Short Link", {
 			});
 
 		frm.add_custom_button("Regenerate QR Code", () => {
-			frm.call("generate_qr_code").then(() => {
-				frappe.show_alert("Regenerated!")
-				frm.refresh()
+			// Enable QR code checkbox and save first
+			frm.set_value("enable_qr_code", 1);
+			frm.save().then(() => {
+				frm.call("generate_qr_code").then(() => {
+					frappe.show_alert("Regenerated!")
+					frm.refresh()
+				})
 			})
 		})
 	},
