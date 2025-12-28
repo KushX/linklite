@@ -2,6 +2,9 @@ import hmac
 import hashlib
 import frappe
 
+# Allow guests to access this page (for QR code scans)
+allow_guest = True
+
 
 def verify_captcha_token(link: str, token: str) -> bool:
     """Verify the HMAC token for captcha verification using constant-time comparison."""
@@ -39,3 +42,4 @@ def get_context(context):
 
     # Redirect to destination
     frappe.redirect(short_link.destination_url)
+    return

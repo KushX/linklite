@@ -2,6 +2,9 @@ import hmac
 import hashlib
 import frappe
 
+# Allow guests to access this page (for QR code scans)
+allow_guest = True
+
 
 def generate_captcha_token(link: str) -> str:
     """Generate an HMAC token for captcha verification."""

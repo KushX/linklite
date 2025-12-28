@@ -35,8 +35,9 @@ class ShortLink(Document):
 		if not self.expires_on:
 			self.expires_on = frappe.utils.add_days(frappe.utils.today(), 30)
 
-	def after_insert(self):
-		if self.enable_qr_code:
+	def on_update(self):
+		# Generate QR code if enabled but doesn't exist
+		if self.enable_qr_code and not self.qr_code:
 			self.generate_qr_code()
 
 	@frappe.whitelist()
